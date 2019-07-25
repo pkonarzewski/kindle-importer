@@ -4,7 +4,7 @@ import codecs
 from unittest import TestCase, main
 import tempfile
 
-from kindler.notes_importer import NotesFile
+from kindler.notes_importer import NotesParser
 
 
 class TestKindleNotes(TestCase):
@@ -29,33 +29,24 @@ displacement vector and it’s getting hotter. Or maybe closer. It’s hard to t
             f.write(self.note_file_content)
 
     def test_init(self):
-        nf = NotesFile(self.tmpfilepath)
-        self.assertIsInstance(nf, NotesFile)
-        self.assertEqual(nf.file_name, self.tmpfilepath)
-        self.assertIsInstance(nf.note_file, TextIOWrapper)
+        nf = NotesParser(file_path=self.tmpfilepath)
 
-    def test_get_note(self):
-        nf = NotesFile(self.tmpfilepath)
+        self.assertIsInstance(nf, NotesParser)
+        self.assertIsInstance(nf.file_path, str)
 
-        note1 = next(nf)
-        self.assertEqual(len(note1), 4)
+    def test_parse(self):
+        nf = NotesParser(file_path=self.tmpfilepath)
 
-        note2 = next(nf)
-        self.assertEqual(len(note2), 4)
+        self.assertEqual(len(nf.notes), 2)
+        self.assertIsInstance(nf.notes, list)
 
-        n3 = next(nf)
-        self.assertIsNone(n3)
+    def test_single_note_structure(self):
+        nf = NotesParser(file_path=self.tmpfilepath)
 
+        note = nf.notes[0]
 
-class TestNotesParsing(TestCase):
-    def test_parsing_entry(self):
-        pass
-
-    def test_converting_to_json(self):
-        pass
-
-    def test_converting_to_md(self):
-        pass
+        self.assertIsInstance(note, dict)
+        self.assertEqual({}, note)
 
 
 if __name__ == "__main__":

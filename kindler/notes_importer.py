@@ -8,31 +8,28 @@ import codecs
 from collections import OrderedDict
 
 
-class NotesFile:
-    """Wrapper on notes text file."""
+# class NotesFile:
+#     """Wrapper on notes text file."""
 
-    def __init__(self, file_name: str, separator: str = "=========="):
-        self.file_name = file_name
-        self.separator = separator
-        self.note_file = codecs.open(self.file_name, encoding='utf8', mode='r')
+#     def __init__(self, file_name: str, separator: str = "=========="):
+#         self.file_name = file_name
+#         self.separator = separator
+#         self.notes = self.load_notes()
 
-    def __iter__(self):
-        return self
+#     def __iter__(self):
+#         return self
 
-    def __next__(self):
-        note = []
+#     def __next__(self):
+#         note = []
 
-        with
+#         for line in self.note_file:
+#             note.append(line.strip())
 
-        with codecs.open(self.file_name, encoding="utf-8") as f:
-            for line in f:
-                note.append(line.strip())
+#             if line.startswith(self.separator):
+#                 yield note
+                # note = []
 
-                if line.startswith(self.separator):
-                    yield note
-                    note = []
-
-            raise StopIteration
+        # raise StopIteration
 
 
 class NotesParser:
@@ -40,69 +37,95 @@ class NotesParser:
 
     """
 
-    note_pattern = re.compile(
-        r"^(?P<title>.+) \((?P<author>.+)\)"
+    separator = "=========="
+    note_pattern = re.compile(r"^(?P<title>.+) \((?P<author>.+)\)")
         # '^- Your Highlight on Location (?P<from_location>/d+)-(?P<to_location>/d+) | Added on (?P<date>.+)$' +
         # '' +
         # '^(?P<note_content>.+)$'
-    )
+    # )
 
-    def __init__(self, file: str):
-        self.file = file
+    def __init__(self, file_path: str):
+        self.file_path = file_path
+        self.notes = self._load_notes()
 
-    def parse(self, start=0):
+    def _load_notes(self):
+
+        notes = []
+
+        note_row = self._parse()
+
+        for n in note_row:
+            notes.append(self.parse_note(n))
+
+        return notes
+
+    def _parse(self):
         """x.
 
         1st - book title
         2nd - highlight location | date
-        3rd - note content
+        3rd - empty line
+        4th - note content
         """
 
-        current_rows = []
+        notes_list = []
 
-        with codecs.open(self.file, encoding="utf-8") as f:
+        note = []
+        with codecs.open(self.file_path, encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
 
-                if line == "==========":
-                    print(self.line_count)
-
-                    if current_rows[3] == "":
-                        pass
-                    else:
-                        self.add_note(current_rows)
-                    current_rows = []
+                if line == self.separator:
+                    notes_list.append(note)
+                    note = []
                 else:
-                    current_rows.append(line)
-                self.line_count += 1
+                    note.append(line)
 
-        self.parsed = True
+        return notes_list
 
-    def add_note(self, rows):
-        """x.
+    def parse_note(self, row_note):
 
-        {Title} ({Author})
-        - Your Highlight on Location {from}-{to} | Added on {Friday, October 12, 2018 8:00:03 AM}
+        note_header = ' '.join(row_note[:1])
 
-        {note content}
-        ==========
+        data_extract = self.note_pattern.findall(note_header)
 
-        """
+        return dict(
+            title=data_extract.group('title'),
+            author='',
+            location_start='',
+            location_end='',
+            create_at='',
+            note_content=row_note[3],
+            note_hash='',
+        )
 
-        # print(self.note_pattern)
-        print(" ".join(rows))
-        matched = self.note_pattern.search(" ".join(rows))
-        print(matched.groups)
+        # return dict(zip(range(1,len(row_note)), row_note))
+
+    # def add_note(self, rows):
+    #     """x.
+
+    #     {Title} ({Author})
+    #     - Your Highlight on Location {from}-{to} | Added on {Friday, October 12, 2018 8:00:03 AM}
+
+    #     {note content}
+    #     ==========
+
+    #     """
+
+    #     # print(self.note_pattern)
+    #     print(" ".join(rows))
+    #     matched = self.note_pattern.search(" ".join(rows))
+    #     print(matched.groups)
         # from_pos, to_pos, note_date = self.extract(rows[1], '- Your Highlight on Location {from}-{to} | Added on {Friday, October 12, 2018 8:00:03 AM}')
         # note_content = re.search(rows[3], '.+')
 
         # self.notes.append({'title': first_row.group(1), 'author': first_row.group(2)})
 
-    def extract(self, text, pattern):
-        """x."
+    # def extract(self, text, pattern):
+    #     """x."
 
-        """
-        return text
+    #     """
+    #     return text
 
         #     kindle_notes.append(note_row)
         #     note_row = []

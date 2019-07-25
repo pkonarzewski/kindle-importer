@@ -1,5 +1,13 @@
-{Title} ({Author})
+{Title} ({Author}(opcjonalne))
 - Your Highlight on Location {from}-{to} | Added on {Friday, October 12, 2018 8:00:03 AM}
+- Your Highlight on page 79
+- Your Bookmark on Location 1380
+- Your Bookmark on page 14
+- Clip This Article on Location 1035
+?- Clip This Article on page 14
 
 {note content}
 ==========
+
+
+pattern = re.compile(r"^(?P<title>.+).+(\((?P<author>.+)\).+)\|-.+(?P<location_from>\d+)-(?P<location_to>\d+)?.+\| Added on \w+, (?P<created_at>.+)")
